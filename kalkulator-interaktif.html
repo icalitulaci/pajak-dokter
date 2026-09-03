@@ -1,0 +1,734 @@
+<meta charset="UTF-8">
+<title>Kalkulator Pajak Dokter</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root {
+    --ground: #F2F5F1;
+    --surface: #FFFFFF;
+    --surface-2: #E9EFE9;
+    --ink: #16231F;
+    --ink-muted: #57685F;
+    --line: #D8E1DA;
+    --accent: #0E6B57;
+    --accent-ink: #FFFFFF;
+    --accent-soft: #E4F1EC;
+    --warn: #B5490B;
+    --warn-soft: #FCEEE3;
+    --shadow: 0 1px 2px rgba(22,35,31,0.04), 0 8px 24px -12px rgba(22,35,31,0.12);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #101613;
+      --surface: #172320;
+      --surface-2: #1E2C27;
+      --ink: #EAF1EC;
+      --ink-muted: #92A59B;
+      --line: #2A3A33;
+      --accent: #37CBA1;
+      --accent-ink: #07201A;
+      --accent-soft: #1A342D;
+      --warn: #F0985E;
+      --warn-soft: #3A2416;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 30px -14px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #101613;
+    --surface: #172320;
+    --surface-2: #1E2C27;
+    --ink: #EAF1EC;
+    --ink-muted: #92A59B;
+    --line: #2A3A33;
+    --accent: #37CBA1;
+    --accent-ink: #07201A;
+    --accent-soft: #1A342D;
+    --warn: #F0985E;
+    --warn-soft: #3A2416;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 30px -14px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .num, input, select {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .num, .rupiah, input[data-rupiah], .rp-prefix {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  }
+
+  h1, h2, .display {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+
+  .app { max-width: 760px; margin: 0 auto; padding: 28px 20px 80px; }
+
+  .brandbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 17px;
+  }
+
+  .brand .mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex: none;
+  }
+
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px;
+    box-shadow: var(--shadow);
+  }
+
+  .step-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    background: transparent;
+    color: var(--ink-muted);
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 8px 14px 8px 8px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+
+  .step-btn .dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    color: var(--ink-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .step-btn.active { background: var(--accent-soft); color: var(--accent); }
+  .step-btn.active .dot { background: var(--accent); color: var(--accent-ink); }
+
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .lede { color: var(--ink-muted); margin: 0 0 22px; font-size: 14px; line-height: 1.55; max-width: 62ch; }
+  .lede .contoh-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    margin-left: 2px;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* --- Kartu sumber penghasilan: aksen kiri putus-putus, gaya kertas resep --- */
+  .sumber-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px dashed var(--line);
+    border-radius: 12px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+
+  .sumber-card.aktif { border-left-color: var(--accent); }
+
+  .sumber-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 15px 18px;
+    cursor: pointer;
+  }
+
+  .sumber-card.aktif .sumber-head { background: var(--accent-soft); }
+
+  .sumber-head input[type="checkbox"] {
+    width: 18px; height: 18px; margin-top: 3px; flex: none; accent-color: var(--accent);
+  }
+
+  .sumber-head .ttl { font-weight: 600; font-size: 15px; display:flex; align-items:center; gap:8px; }
+  .sumber-head .sub { color: var(--ink-muted); font-size: 12.5px; margin-top: 2px; }
+
+  .sumber-body { display: none; padding: 6px 18px 20px; }
+  .sumber-card.aktif .sumber-body { display: block; }
+
+  label { display: block; font-size: 12.5px; font-weight: 600; margin: 14px 0 4px; color: var(--ink); }
+  label .opsional { font-weight: 400; color: var(--ink-muted); }
+  .hint { font-size: 12px; color: var(--ink-muted); margin: 0 0 2px; }
+
+  input[type="text"], select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 14.5px;
+    background: var(--surface);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+  }
+  input[data-rupiah] { font-family: 'IBM Plex Mono', monospace; }
+  input:focus, select:focus { outline: none; border-color: var(--accent); }
+
+  .rp-wrap { position: relative; }
+  .rp-wrap input { padding-left: 34px; }
+  .rp-wrap::before {
+    content: "Rp";
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--ink-muted); font-size: 13px; pointer-events: none;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .mini-hasil {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: var(--surface-2);
+    border-radius: 8px;
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    display: none;
+  }
+  .mini-hasil.tampil { display: block; }
+  .mini-hasil strong { color: var(--accent); font-family: 'IBM Plex Mono', monospace; }
+
+  .actions-row { display: flex; gap: 10px; align-items: center; margin-top: 22px; flex-wrap: wrap; }
+
+  .btn-primary {
+    background: var(--accent); color: var(--accent-ink); border: none;
+    border-radius: 9px; padding: 13px 22px; font-size: 14.5px; font-weight: 700;
+    cursor: pointer; font-family: 'Inter', sans-serif;
+  }
+  .btn-primary:hover { filter: brightness(0.94); }
+
+  .btn-ghost {
+    background: transparent; color: var(--ink-muted); border: 1px solid var(--line);
+    border-radius: 9px; padding: 12px 18px; font-size: 13.5px; font-weight: 600;
+    cursor: pointer; font-family: 'Inter', sans-serif;
+  }
+  .btn-ghost:hover { color: var(--ink); border-color: var(--ink-muted); }
+
+  .peringatan-inline { color: var(--warn); font-size: 12.5px; margin-top: 10px; display: none; }
+  .peringatan-inline.tampil { display: block; }
+
+  .catatan {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 13px 15px;
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    line-height: 1.55;
+    margin-top: 24px;
+  }
+  .catatan strong { color: var(--ink); }
+
+  /* --- Ledger / ringkasan --- */
+  .ledger {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 22px 22px 8px;
+    margin-bottom: 18px;
+  }
+
+  .ledger h2 { font-size: 15px; margin: 0 0 14px; }
+
+  .sumber-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 0; border-bottom: 1px dashed var(--line); gap: 12px;
+  }
+  .sumber-row:last-child { border-bottom: none; }
+  .sumber-row .jenis { font-weight: 600; font-size: 13.5px; }
+  .sumber-row .meta { font-size: 12px; color: var(--ink-muted); font-family: 'IBM Plex Mono', monospace; }
+  .sumber-row button {
+    background: none; border: none; color: var(--warn); font-size: 12.5px; cursor: pointer; font-weight: 600;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .ledger-line {
+    display: flex; justify-content: space-between; padding: 9px 0; font-size: 13.5px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .ledger-line:last-child { border-bottom: none; }
+  .ledger-line .label { color: var(--ink-muted); }
+  .ledger-line .val { font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+
+  table.rincian { width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 6px 0 14px; }
+  table.rincian th, table.rincian td { text-align: left; padding: 7px 4px; border-bottom: 1px solid var(--line); }
+  table.rincian th { color: var(--ink-muted); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.03em; }
+  table.rincian td.num, table.rincian th.num { text-align: right; font-family: 'IBM Plex Mono', monospace; }
+
+  .total-terutang {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 16px 0 12px; margin-top: 6px; border-top: 2px solid var(--line);
+  }
+  .total-terutang .label { font-size: 13px; color: var(--ink-muted); }
+  .total-terutang .val { font-family: 'IBM Plex Mono', monospace; font-size: 24px; font-weight: 600; color: var(--accent); }
+
+  /* Stempel hasil akhir — gaya cap tinta */
+  .stempel-wrap { display: flex; justify-content: center; margin: 22px 0 6px; }
+  .stempel {
+    border: 3px double var(--warn);
+    color: var(--warn);
+    border-radius: 10px;
+    padding: 14px 26px;
+    transform: rotate(-2deg);
+    text-align: center;
+    font-family: 'Fraunces', serif;
+  }
+  .stempel.lebih { border-color: var(--accent); color: var(--accent); }
+  .stempel .kop { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; font-family: 'Inter', sans-serif; font-weight: 700; }
+  .stempel .angka { font-size: 22px; font-weight: 600; font-family: 'IBM Plex Mono', serif; margin-top: 3px; }
+
+  select#ptkp { margin-bottom: 4px; }
+
+  footer.foot { text-align: center; color: var(--ink-muted); font-size: 11.5px; margin-top: 36px; }
+
+  @media (max-width: 480px) {
+    .stepper { width: 100%; justify-content: center; }
+  }
+</style>
+
+<div class="app">
+  <div class="brandbar">
+    <div class="brand"><span class="mark">🩺</span> Kalkulator Pajak Dokter</div>
+    <div class="stepper">
+      <button class="step-btn active" id="tabStep1" type="button"><span class="dot">1</span> Input Penghasilan</button>
+      <button class="step-btn" id="tabStep2" type="button"><span class="dot">2</span> Ringkasan</button>
+    </div>
+  </div>
+
+  <!-- ===================== LANGKAH 1 ===================== -->
+  <section class="panel active" id="panelStep1">
+    <h1>Input Penghasilan</h1>
+    <p class="lede">Centang semua sumber penghasilan yang kamu punya tahun ini, lalu isi datanya. <span class="contoh-badge">✎ contoh sudah diisi</span> — tinggal ganti dengan angkamu sendiri.</p>
+
+    <div class="sumber-card aktif" id="card-gaji">
+      <label class="sumber-head">
+        <input type="checkbox" id="chk-gaji" checked>
+        <div>
+          <div class="ttl">💼 Gaji Pegawai Tetap</div>
+          <div class="sub">Dokter PNS/ASN atau karyawan tetap RS dengan gaji bulanan.</div>
+        </div>
+      </label>
+      <div class="sumber-body">
+        <label for="gaji-bruto">Penghasilan bruto setahun</label>
+        <p class="hint">Gaji pokok + tunjangan + lembur + bonus + THR, Januari–Desember.</p>
+        <div class="rp-wrap"><input type="text" id="gaji-bruto" data-rupiah inputmode="numeric" value="300.000.000"></div>
+
+        <label for="gaji-iuran">Iuran pensiun / JHT / JP dibayar sendiri setahun <span class="opsional">(opsional)</span></label>
+        <div class="rp-wrap"><input type="text" id="gaji-iuran" data-rupiah inputmode="numeric" value="3.600.000"></div>
+
+        <label for="gaji-dipotong">PPh 21 yang sudah dipotong pemberi kerja setahun <span class="opsional">(opsional)</span></label>
+        <p class="hint">Lihat bukti potong 1721-A1/A2.</p>
+        <div class="rp-wrap"><input type="text" id="gaji-dipotong" data-rupiah inputmode="numeric" value="18.000.000"></div>
+
+        <div class="mini-hasil" id="mini-gaji"></div>
+      </div>
+    </div>
+
+    <div class="sumber-card aktif" id="card-jasa">
+      <label class="sumber-head">
+        <input type="checkbox" id="chk-jasa" checked>
+        <div>
+          <div class="ttl">🩹 Jasa Medis (Bukan Pegawai)</div>
+          <div class="sub">Honor/jasa dokter dari RS atau klinik mitra, dipotong PPh 21 tiap pembayaran.</div>
+        </div>
+      </label>
+      <div class="sumber-body">
+        <label for="jasa-bruto">Total jasa medis / honor bruto setahun</label>
+        <p class="hint">Jumlah dari semua RS/klinik/pemberi honor, sebelum dipotong bagi hasil RS maupun PPh 21.</p>
+        <div class="rp-wrap"><input type="text" id="jasa-bruto" data-rupiah inputmode="numeric" value="120.000.000"></div>
+
+        <label for="jasa-npwp">Status NPWP</label>
+        <select id="jasa-npwp">
+          <option value="ya">Punya NPWP / NIK tervalidasi sebagai NPWP</option>
+          <option value="tidak">Belum punya NPWP (tarif dipotong +20%)</option>
+        </select>
+
+        <label for="jasa-dipotong">Total PPh 21 yang sudah dipotong pemberi kerja setahun <span class="opsional">(opsional)</span></label>
+        <div class="rp-wrap"><input type="text" id="jasa-dipotong" data-rupiah inputmode="numeric" value="3.000.000"></div>
+
+        <div class="mini-hasil" id="mini-jasa"></div>
+      </div>
+    </div>
+
+    <div class="sumber-card" id="card-nppn">
+      <label class="sumber-head">
+        <input type="checkbox" id="chk-nppn">
+        <div>
+          <div class="ttl">🏥 Praktik Mandiri — Norma (NPPN)</div>
+          <div class="sub">Omzet praktik pribadi, dihitung pakai norma 50% tanpa perlu rincian biaya.</div>
+        </div>
+      </label>
+      <div class="sumber-body">
+        <label for="nppn-omzet">Omzet bruto praktik setahun</label>
+        <p class="hint">Seluruh penerimaan dari pasien setahun, sebelum dikurangi biaya apa pun.</p>
+        <div class="rp-wrap"><input type="text" id="nppn-omzet" data-rupiah inputmode="numeric" value="0"></div>
+
+        <label for="nppn-norma">Persentase norma</label>
+        <p class="hint">Standar untuk profesi dokter (KEP-536/PJ/2000): 50%. Ubah hanya jika klasifikasi berbeda berlaku untukmu.</p>
+        <input type="text" id="nppn-norma" inputmode="numeric" value="50">
+
+        <div class="mini-hasil" id="mini-nppn"></div>
+      </div>
+    </div>
+
+    <div class="sumber-card" id="card-pembukuan">
+      <label class="sumber-head">
+        <input type="checkbox" id="chk-pembukuan">
+        <div>
+          <div class="ttl">📒 Praktik Mandiri — Pembukuan</div>
+          <div class="sub">Omzet dikurangi biaya operasional riil (sewa, staf, obat, alat, dll).</div>
+        </div>
+      </label>
+      <div class="sumber-body">
+        <label for="pb-omzet">Omzet bruto praktik setahun</label>
+        <div class="rp-wrap"><input type="text" id="pb-omzet" data-rupiah inputmode="numeric" value="0"></div>
+
+        <label for="pb-sewa">Sewa & operasional klinik</label>
+        <div class="rp-wrap"><input type="text" id="pb-sewa" data-rupiah inputmode="numeric" value="0"></div>
+        <label for="pb-staf">Gaji / honor staf & asisten</label>
+        <div class="rp-wrap"><input type="text" id="pb-staf" data-rupiah inputmode="numeric" value="0"></div>
+        <label for="pb-obat">Obat & bahan medis habis pakai</label>
+        <div class="rp-wrap"><input type="text" id="pb-obat" data-rupiah inputmode="numeric" value="0"></div>
+        <label for="pb-penyusutan">Penyusutan alat medis</label>
+        <div class="rp-wrap"><input type="text" id="pb-penyusutan" data-rupiah inputmode="numeric" value="0"></div>
+        <label for="pb-lainnya">Biaya operasional lain-lain</label>
+        <div class="rp-wrap"><input type="text" id="pb-lainnya" data-rupiah inputmode="numeric" value="0"></div>
+
+        <div class="mini-hasil" id="mini-pembukuan"></div>
+      </div>
+    </div>
+
+    <p class="peringatan-inline" id="peringatanKosong">Centang minimal satu sumber penghasilan dulu, ya.</p>
+
+    <div class="actions-row">
+      <button class="btn-primary" id="btnLanjut" type="button">Lanjut ke Ringkasan Tahunan →</button>
+      <button class="btn-ghost" id="btnKosongkan" type="button">Kosongkan semua</button>
+    </div>
+
+    <div class="catatan">
+      <strong>Estimasi, bukan nasihat pajak resmi.</strong> Aturan yang dipakai: UU HPP 2021 (tarif Pasal 17), PMK 168/2023 (PPh 21 bukan pegawai), dan norma penghitungan penghasilan neto untuk profesi dokter (KEP-536/PJ/2000). Untuk kepastian hukum, konsultasikan dengan konsultan pajak.
+    </div>
+  </section>
+
+  <!-- ===================== LANGKAH 2 ===================== -->
+  <section class="panel" id="panelStep2">
+    <h1>Ringkasan Tahunan</h1>
+    <p class="lede">SPT Formulir 1770 — PTKP dan tarif progresif Pasal 17 diterapkan satu kali atas gabungan semua sumber, bukan per sumber.</p>
+
+    <div class="ledger">
+      <h2>Sumber Penghasilan</h2>
+      <div id="daftarSumber"></div>
+    </div>
+
+    <div class="ledger">
+      <h2>Status PTKP</h2>
+      <label for="ptkp">Status pernikahan &amp; tanggungan</label>
+      <select id="ptkp"></select>
+      <label for="kreditManual">Kredit pajak tambahan yang belum tercatat <span class="opsional">(opsional)</span></label>
+      <p class="hint">Mis. angsuran Pasal 25 yang sudah disetor sendiri untuk praktik mandiri.</p>
+      <div class="rp-wrap"><input type="text" id="kreditManual" data-rupiah inputmode="numeric" value="0"></div>
+    </div>
+
+    <div class="ledger" id="ledgerHasil">
+      <h2>Hasil Perhitungan</h2>
+      <div class="ledger-line"><span class="label">Total penghasilan neto</span><span class="val" id="outNeto">—</span></div>
+      <div class="ledger-line"><span class="label">PTKP</span><span class="val" id="outPtkp">—</span></div>
+      <div class="ledger-line"><span class="label">Penghasilan Kena Pajak (PKP)</span><span class="val" id="outPkp">—</span></div>
+
+      <table class="rincian" id="tabelRincian"></table>
+
+      <div class="total-terutang"><span class="label">Total PPh terutang setahun</span><span class="val" id="outTotal">—</span></div>
+      <div class="ledger-line"><span class="label">Total kredit pajak (sudah dipotong/disetor)</span><span class="val" id="outKredit">—</span></div>
+
+      <div class="stempel-wrap">
+        <div class="stempel" id="stempel">
+          <div class="kop" id="stempelLabel">KURANG BAYAR</div>
+          <div class="angka" id="outSelisih">Rp 0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="catatan">
+      Belum memperhitungkan penggabungan penghasilan pasangan, kompensasi kerugian tahun lalu, zakat/sumbangan wajib, atau kredit pajak luar negeri. Untuk pelaporan resmi, gunakan e-Filing DJP atau konsultasikan dengan konsultan pajak.
+    </div>
+
+    <div class="actions-row">
+      <button class="btn-ghost" id="btnKembali" type="button">← Kembali ke Langkah 1</button>
+    </div>
+  </section>
+
+  <footer class="foot">Kalkulator pajak dokter — alat bantu estimasi, dibuat untuk kebutuhan pribadi.</footer>
+</div>
+
+<script>
+  // ---------- Konstanta & util pajak ----------
+  const PTKP_TABLE = {
+    TK0: { label: 'TK/0 — Belum kawin, 0 tanggungan', amount: 54000000 },
+    TK1: { label: 'TK/1 — Belum kawin, 1 tanggungan', amount: 58500000 },
+    TK2: { label: 'TK/2 — Belum kawin, 2 tanggungan', amount: 63000000 },
+    TK3: { label: 'TK/3 — Belum kawin, 3 tanggungan', amount: 67500000 },
+    K0: { label: 'K/0 — Kawin, 0 tanggungan', amount: 58500000 },
+    K1: { label: 'K/1 — Kawin, 1 tanggungan', amount: 63000000 },
+    K2: { label: 'K/2 — Kawin, 2 tanggungan', amount: 67500000 },
+    K3: { label: 'K/3 — Kawin, 3 tanggungan', amount: 72000000 },
+  };
+  const TAX_BRACKETS = [
+    { upTo: 60000000, rate: 0.05 },
+    { upTo: 250000000, rate: 0.15 },
+    { upTo: 500000000, rate: 0.25 },
+    { upTo: 5000000000, rate: 0.30 },
+    { upTo: Infinity, rate: 0.35 },
+  ];
+  const BIAYA_JABATAN_RATE = 0.05;
+  const BIAYA_JABATAN_MAX = 6000000;
+  const DPP_BUKAN_PEGAWAI = 0.5;
+  const NPPN_DEFAULT = 50;
+
+  function formatRupiah(n) {
+    if (isNaN(n) || n === null) n = 0;
+    const sign = n < 0 ? '-' : '';
+    return sign + 'Rp ' + Math.round(Math.abs(n)).toLocaleString('id-ID');
+  }
+  function parseAngka(str) {
+    if (typeof str === 'number') return str;
+    if (!str) return 0;
+    const n = parseInt(String(str).replace(/[^0-9-]/g, ''), 10);
+    return isNaN(n) ? 0 : n;
+  }
+  function pasangFormatter(el) {
+    el.addEventListener('input', () => {
+      const angka = parseAngka(el.value);
+      const dariKanan = el.value.length - el.selectionStart;
+      el.value = angka === 0 ? '' : angka.toLocaleString('id-ID');
+      const posisi = Math.max(0, el.value.length - dariKanan);
+      el.setSelectionRange(posisi, posisi);
+    });
+  }
+  function hitungNetoGaji(bruto, iuran) {
+    const biayaJabatan = Math.min(bruto * BIAYA_JABATAN_RATE, BIAYA_JABATAN_MAX);
+    return { biayaJabatan, neto: Math.max(0, bruto - biayaJabatan - iuran) };
+  }
+  function hitungNetoJasa(bruto) {
+    const neto = bruto * DPP_BUKAN_PEGAWAI;
+    return { neto };
+  }
+  function hitungNetoNppn(omzet, normaPersen) {
+    const persen = normaPersen > 0 ? normaPersen : NPPN_DEFAULT;
+    return { neto: omzet * (persen / 100), normaPersen: persen };
+  }
+  function hitungNetoPembukuan(omzet, biayaTotal) {
+    return { neto: Math.max(0, omzet - biayaTotal) };
+  }
+  function hitungPajakProgresif(pkpMentah) {
+    const pkp = Math.max(0, Math.floor(pkpMentah / 1000) * 1000);
+    let sisa = pkp, bawah = 0, total = 0;
+    const rincian = [];
+    for (const b of TAX_BRACKETS) {
+      if (sisa <= 0) break;
+      const lebar = b.upTo - bawah;
+      const kena = Math.min(sisa, lebar);
+      if (kena > 0) {
+        const pajak = kena * b.rate;
+        total += pajak;
+        rincian.push({ dari: bawah, sampai: b.upTo === Infinity ? null : b.upTo, tarif: b.rate, dasar: kena, pajak });
+      }
+      sisa -= kena; bawah = b.upTo;
+    }
+    return { pkp, total, rincian };
+  }
+
+  // ---------- Konfigurasi tiap sumber ----------
+  const SUMBER = [
+    {
+      id: 'gaji', chk: 'chk-gaji', card: 'card-gaji', mini: 'mini-gaji', jenis: '💼 Gaji Pegawai Tetap',
+      ambil() { return { bruto: parseAngka(v('gaji-bruto')), iuran: parseAngka(v('gaji-iuran')), dipotong: parseAngka(v('gaji-dipotong')) }; },
+      hitung(i) { const h = hitungNetoGaji(i.bruto, i.iuran); return { bruto: i.bruto, neto: h.neto, dipotong: i.dipotong, ket: `Biaya jabatan ${formatRupiah(h.biayaJabatan)} · Neto <strong>${formatRupiah(h.neto)}</strong>` }; },
+    },
+    {
+      id: 'jasa', chk: 'chk-jasa', card: 'card-jasa', mini: 'mini-jasa', jenis: '🩹 Jasa Medis (Bukan Pegawai)',
+      ambil() { return { bruto: parseAngka(v('jasa-bruto')), dipotong: parseAngka(v('jasa-dipotong')) }; },
+      hitung(i) { const h = hitungNetoJasa(i.bruto); return { bruto: i.bruto, neto: h.neto, dipotong: i.dipotong, ket: `DPP 50% · Neto <strong>${formatRupiah(h.neto)}</strong>` }; },
+    },
+    {
+      id: 'nppn', chk: 'chk-nppn', card: 'card-nppn', mini: 'mini-nppn', jenis: '🏥 Praktik Mandiri (Norma/NPPN)',
+      ambil() { return { omzet: parseAngka(v('nppn-omzet')), normaPersen: parseFloat(v('nppn-norma')) || 50 }; },
+      hitung(i) { const h = hitungNetoNppn(i.omzet, i.normaPersen); return { bruto: i.omzet, neto: h.neto, dipotong: 0, ket: `Norma ${h.normaPersen}% · Neto <strong>${formatRupiah(h.neto)}</strong>` }; },
+    },
+    {
+      id: 'pembukuan', chk: 'chk-pembukuan', card: 'card-pembukuan', mini: 'mini-pembukuan', jenis: '📒 Praktik Mandiri (Pembukuan)',
+      ambil() { return { omzet: parseAngka(v('pb-omzet')), sewa: parseAngka(v('pb-sewa')), staf: parseAngka(v('pb-staf')), obat: parseAngka(v('pb-obat')), penyusutan: parseAngka(v('pb-penyusutan')), lainnya: parseAngka(v('pb-lainnya')) }; },
+      hitung(i) { const biaya = i.sewa + i.staf + i.obat + i.penyusutan + i.lainnya; const h = hitungNetoPembukuan(i.omzet, biaya); return { bruto: i.omzet, neto: h.neto, dipotong: 0, ket: `Biaya ${formatRupiah(biaya)} · Neto <strong>${formatRupiah(h.neto)}</strong>` }; },
+    },
+  ];
+
+  function v(id) { return document.getElementById(id).value; }
+  function el(id) { return document.getElementById(id); }
+
+  document.querySelectorAll('input[data-rupiah]').forEach(pasangFormatter);
+
+  // Toggle buka/tutup + live mini-preview
+  SUMBER.forEach((cfg) => {
+    const chk = el(cfg.chk), card = el(cfg.card), body = card.querySelector('.sumber-body');
+    const perbarui = () => {
+      card.classList.toggle('aktif', chk.checked);
+      if (!chk.checked) { el(cfg.mini).classList.remove('tampil'); return; }
+      const inputs = cfg.ambil();
+      if (!inputs.bruto && !inputs.omzet) { el(cfg.mini).classList.remove('tampil'); return; }
+      const hasil = cfg.hitung(inputs);
+      el(cfg.mini).innerHTML = hasil.ket;
+      el(cfg.mini).classList.add('tampil');
+    };
+    chk.addEventListener('change', perbarui);
+    body.addEventListener('input', perbarui);
+    perbarui();
+  });
+
+  // ---------- Isi pilihan PTKP ----------
+  Object.entries(PTKP_TABLE).forEach(([kode, d]) => {
+    const opt = document.createElement('option');
+    opt.value = kode;
+    opt.textContent = `${d.label} — ${formatRupiah(d.amount)}`;
+    el('ptkp').appendChild(opt);
+  });
+  pasangFormatter(el('kreditManual'));
+
+  // ---------- Navigasi step (tab, tanpa reload) ----------
+  function tampilkanStep(n) {
+    el('panelStep1').classList.toggle('active', n === 1);
+    el('panelStep2').classList.toggle('active', n === 2);
+    el('tabStep1').classList.toggle('active', n === 1);
+    el('tabStep2').classList.toggle('active', n === 2);
+    window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+  }
+  el('tabStep1').addEventListener('click', () => tampilkanStep(1));
+  el('tabStep2').addEventListener('click', () => tampilkanStep(2));
+  el('btnKembali').addEventListener('click', () => tampilkanStep(1));
+
+  el('btnKosongkan').addEventListener('click', () => {
+    document.querySelectorAll('#panelStep1 input[data-rupiah]').forEach((i) => (i.value = ''));
+    document.querySelectorAll('#panelStep1 input[type="checkbox"]').forEach((c) => (c.checked = false));
+    SUMBER.forEach((cfg) => el(cfg.card).classList.remove('aktif'));
+    SUMBER.forEach((cfg) => el(cfg.mini).classList.remove('tampil'));
+  });
+
+  function renderRincian(rincian) {
+    if (rincian.length === 0) return '<tr><td colspan="4" class="hint" style="padding:8px 4px;">Belum ada penghasilan kena pajak.</td></tr>';
+    let rows = '<thead><tr><th>Lapisan PKP</th><th class="num">Tarif</th><th class="num">Dasar</th><th class="num">Pajak</th></tr></thead><tbody>';
+    rincian.forEach((r) => {
+      const label = r.sampai ? `${formatRupiah(r.dari)} – ${formatRupiah(r.sampai)}` : `> ${formatRupiah(r.dari)}`;
+      rows += `<tr><td>${label}</td><td class="num">${(r.tarif * 100).toFixed(0)}%</td><td class="num">${formatRupiah(r.dasar)}</td><td class="num">${formatRupiah(r.pajak)}</td></tr>`;
+    });
+    return rows + '</tbody>';
+  }
+
+  function hitungSemua() {
+    const aktif = SUMBER.filter((cfg) => el(cfg.chk).checked);
+
+    // daftar sumber di ledger
+    const daftar = el('daftarSumber');
+    daftar.innerHTML = '';
+    if (aktif.length === 0) {
+      daftar.innerHTML = '<p class="hint">Belum ada sumber penghasilan dicentang di Langkah 1.</p>';
+    }
+    let totalNeto = 0, totalKredit = parseAngka(v('kreditManual'));
+    aktif.forEach((cfg) => {
+      const hasil = cfg.hitung(cfg.ambil());
+      totalNeto += hasil.neto;
+      totalKredit += hasil.dipotong || 0;
+      const row = document.createElement('div');
+      row.className = 'sumber-row';
+      row.innerHTML = `<div><div class="jenis">${cfg.jenis}</div><div class="meta">Neto ${formatRupiah(hasil.neto)} · Dipotong ${formatRupiah(hasil.dipotong || 0)}</div></div>`;
+      daftar.appendChild(row);
+    });
+
+    const ptkpData = PTKP_TABLE[v('ptkp') || 'TK0'];
+    const pkpMentah = Math.max(0, totalNeto - ptkpData.amount);
+    const { pkp, total, rincian } = hitungPajakProgresif(pkpMentah);
+
+    el('outNeto').textContent = formatRupiah(totalNeto);
+    el('outPtkp').textContent = formatRupiah(ptkpData.amount);
+    el('outPkp').textContent = formatRupiah(pkp);
+    el('tabelRincian').innerHTML = renderRincian(rincian);
+    el('outTotal').textContent = formatRupiah(total);
+    el('outKredit').textContent = formatRupiah(totalKredit);
+
+    const selisih = total - totalKredit;
+    const stempel = el('stempel');
+    if (selisih > 0) {
+      stempel.classList.remove('lebih');
+      el('stempelLabel').textContent = 'KURANG BAYAR · PPh PASAL 29';
+      el('outSelisih').textContent = formatRupiah(selisih);
+    } else {
+      stempel.classList.add('lebih');
+      el('stempelLabel').textContent = 'LEBIH BAYAR';
+      el('outSelisih').textContent = formatRupiah(Math.abs(selisih));
+    }
+  }
+
+  el('btnLanjut').addEventListener('click', () => {
+    const adaYangDicentang = SUMBER.some((cfg) => el(cfg.chk).checked);
+    if (!adaYangDicentang) { el('peringatanKosong').classList.add('tampil'); return; }
+    el('peringatanKosong').classList.remove('tampil');
+    hitungSemua();
+    tampilkanStep(2);
+  });
+  el('ptkp').addEventListener('change', hitungSemua);
+  el('kreditManual').addEventListener('input', hitungSemua);
+  el('tabStep2').addEventListener('click', hitungSemua);
+
+  // Hitung sekali di awal supaya Langkah 2 sudah terisi kalau user langsung klik tab
+  hitungSemua();
+</script>

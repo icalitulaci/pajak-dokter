@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ringkasan Tahunan — Kalkulator Pajak Dokter</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <a href="index.html">Kalkulator Pajak Dokter</a>
+    <nav>
+      <a href="index.html">Langkah 1: Input Penghasilan</a>
+    </nav>
+  </div>
+</div>
+
+<main>
+  <a class="kembali-link" href="index.html">← Kembali ke Langkah 1</a>
+  <h1>Langkah 2 — Ringkasan Tahunan (SPT Formulir 1770)</h1>
+  <div class="steps">
+    <div class="step"><span class="dot">1</span> Input Penghasilan</div>
+    <div class="step-line"></div>
+    <div class="step active"><span class="dot">2</span> Ringkasan Tahunan</div>
+  </div>
+  <p class="lede">Menggabungkan semua sumber penghasilan yang sudah kamu simpan di Langkah 1, lalu menghitung PPh terutang setahun: PTKP dan tarif progresif Pasal 17 diterapkan satu kali atas total gabungan, bukan per sumber.</p>
+
+  <div class="card">
+    <h2>Sumber Penghasilan Tersimpan</h2>
+    <div class="daftar-sumber" id="daftarSumber"></div>
+    <p class="muted" id="pesanKosong" style="display:none;">Belum ada data tersimpan. Kembali ke <a href="index.html">Langkah 1</a>, centang sumber penghasilanmu, lalu tekan "Lanjut ke Ringkasan Tahunan".</p>
+  </div>
+
+  <div class="card">
+    <h2>Status PTKP</h2>
+    <label for="ptkp">Status pernikahan & tanggungan</label>
+    <select id="ptkp"></select>
+
+    <label for="dipotongManual">Kredit pajak tambahan yang belum tercatat di atas <span class="opsional">(opsional)</span></label>
+    <p class="hint">PPh 21/25 lain yang sudah dibayar/dipotong tapi belum masuk dari kalkulator sumber (mis. angsuran Pasal 25 yang sudah disetor sendiri untuk praktik mandiri).</p>
+    <div class="rp-wrap"><input type="text" id="dipotongManual" inputmode="numeric" placeholder="0"></div>
+
+    <button class="primary" id="btnHitung">Hitung Pajak Setahun</button>
+  </div>
+
+  <div class="card hasil" id="hasil">
+    <h2>Hasil Perhitungan</h2>
+    <div class="ringkasan-baris"><span class="label">Total penghasilan neto (semua sumber)</span><span class="nilai" id="outNeto">-</span></div>
+    <div class="ringkasan-baris"><span class="label">PTKP</span><span class="nilai" id="outPtkp">-</span></div>
+    <div class="ringkasan-baris"><span class="label">Penghasilan Kena Pajak (PKP)</span><span class="nilai" id="outPkp">-</span></div>
+
+    <h2 style="margin-top:20px;">Rincian per Lapisan Tarif</h2>
+    <div id="tabelRincian"></div>
+
+    <div class="total-besar"><span class="label">Total PPh terutang setahun</span><span class="nilai" id="outTotalPajak">-</span></div>
+
+    <div class="ringkasan-baris" style="margin-top:12px;"><span class="label">Total kredit pajak (sudah dipotong/disetor)</span><span class="nilai" id="outKredit">-</span></div>
+
+    <div class="total-besar">
+      <span class="label" id="labelSelisih">Kurang / lebih bayar</span>
+      <span class="nilai" id="outSelisih">-</span>
+    </div>
+
+    <div class="catatan peringatan">
+      Ini estimasi, bukan SPT resmi. Belum memperhitungkan penggabungan penghasilan pasangan, kompensasi kerugian tahun lalu, zakat/sumbangan wajib, atau kredit pajak luar negeri. Untuk pelaporan resmi, gunakan e-Filing DJP / konsultasikan dengan konsultan pajak.
+    </div>
+  </div>
+</main>
+
+<footer>Kalkulator pajak dokter — alat bantu estimasi, dibuat untuk kebutuhan pribadi.</footer>
+
+<script src="js/tax-core.js"></script>
+<script src="js/ringkasan.js"></script>
+</body>
+</html>

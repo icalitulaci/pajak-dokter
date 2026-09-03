@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator Pajak Dokter</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <a href="index.html">Kalkulator Pajak Dokter</a>
+    <nav>
+      <a href="ringkasan.html">Langkah 2: Ringkasan</a>
+    </nav>
+  </div>
+</div>
+
+<main>
+  <h1>Langkah 1 — Input Penghasilan</h1>
+  <div class="steps">
+    <div class="step active"><span class="dot">1</span> Input Penghasilan</div>
+    <div class="step-line"></div>
+    <div class="step"><span class="dot">2</span> Ringkasan Tahunan</div>
+  </div>
+  <p class="lede">Centang semua sumber penghasilan yang kamu punya tahun ini — boleh lebih dari satu — lalu isi datanya. Setelah selesai, tekan "Lanjut ke Ringkasan Tahunan" di bagian bawah.</p>
+
+  <!-- 1. Gaji Pegawai Tetap -->
+  <div class="sumber-toggle" id="toggle-gaji">
+    <label class="sumber-toggle-head">
+      <input type="checkbox" id="chk-gaji">
+      <div>
+        <h3>💼 Gaji Pegawai Tetap</h3>
+        <p>Dokter PNS/ASN atau karyawan tetap RS dengan gaji bulanan.</p>
+      </div>
+    </label>
+    <div class="sumber-toggle-body">
+      <label for="gaji-bruto">Penghasilan bruto setahun</label>
+      <p class="hint">Gaji pokok + tunjangan + lembur + bonus + THR, Januari–Desember.</p>
+      <div class="rp-wrap"><input type="text" id="gaji-bruto" data-rupiah inputmode="numeric" placeholder="0"></div>
+
+      <label for="gaji-iuran">Iuran pensiun / JHT / JP dibayar sendiri setahun <span class="opsional">(opsional)</span></label>
+      <div class="rp-wrap"><input type="text" id="gaji-iuran" data-rupiah inputmode="numeric" placeholder="0"></div>
+
+      <label for="gaji-dipotong">PPh 21 yang sudah dipotong pemberi kerja setahun <span class="opsional">(opsional)</span></label>
+      <p class="hint">Lihat bukti potong 1721-A1/A2.</p>
+      <div class="rp-wrap"><input type="text" id="gaji-dipotong" data-rupiah inputmode="numeric" placeholder="0"></div>
+
+      <div class="hasil-mini" id="hasilmini-gaji"></div>
+    </div>
+  </div>
+
+  <!-- 2. Jasa Medis Bukan Pegawai -->
+  <div class="sumber-toggle" id="toggle-jasa">
+    <label class="sumber-toggle-head">
+      <input type="checkbox" id="chk-jasa">
+      <div>
+        <h3>🩺 Jasa Medis (Bukan Pegawai)</h3>
+        <p>Honor/jasa dokter dari RS atau klinik mitra, dipotong PPh 21 tiap pembayaran.</p>
+      </div>
+    </label>
+    <div class="sumber-toggle-body">
+      <label for="jasa-bruto">Total jasa medis / honor bruto setahun</label>
+      <p class="hint">Jumlah dari semua RS/klinik/pemberi honor, sebelum dipotong bagi hasil RS maupun PPh 21.</p>
+      <div class="rp-wrap"><input type="text" id="jasa-bruto" data-rupiah inputmode="numeric" placeholder="0"></div>
+
+      <label for="jasa-npwp">Status NPWP</label>
+      <select id="jasa-npwp">
+        <option value="ya">Punya NPWP / NIK tervalidasi sebagai NPWP</option>
+        <option value="tidak">Belum punya NPWP (tarif dipotong +20%)</option>
+      </select>
+
+      <label for="jasa-dipotong">Total PPh 21 yang sudah dipotong pemberi kerja setahun <span class="opsional">(opsional)</span></label>
+      <div class="rp-wrap"><input type="text" id="jasa-dipotong" data-rupiah inputmode="numeric" placeholder="0"></div>
+
+      <div class="hasil-mini" id="hasilmini-jasa"></div>
+    </div>
+  </div>
+
+  <!-- 3. Praktik Mandiri (Norma) -->
+  <div class="sumber-toggle" id="toggle-nppn">
+    <label class="sumber-toggle-head">
+      <input type="checkbox" id="chk-nppn">
+      <div>
+        <h3>🏥 Praktik Mandiri — Norma (NPPN)</h3>
+        <p>Omzet praktik pribadi, dihitung pakai norma 50% tanpa perlu rincian biaya.</p>
+      </div>
+    </label>
+    <div class="sumber-toggle-body">
+      <label for="nppn-omzet">Omzet bruto praktik setahun</label>
+      <p class="hint">Seluruh penerimaan dari pasien setahun, sebelum dikurangi biaya apa pun.</p>
+      <div class="rp-wrap"><input type="text" id="nppn-omzet" data-rupiah inputmode="numeric" placeholder="0"></div>
+
+      <label for="nppn-norma">Persentase norma</label>
+      <p class="hint">Standar untuk profesi dokter (KEP-536/PJ/2000): 50%. Ubah hanya jika kamu tahu klasifikasi berbeda berlaku untukmu.</p>
+      <input type="text" id="nppn-norma" inputmode="numeric" value="50">
+
+      <div class="hasil-mini" id="hasilmini-nppn"></div>
+    </div>
+  </div>
+
+  <!-- 4. Praktik Mandiri (Pembukuan) -->
+  <div class="sumber-toggle" id="toggle-pembukuan">
+    <label class="sumber-toggle-head">
+      <input type="checkbox" id="chk-pembukuan">
+      <div>
+        <h3>📒 Praktik Mandiri — Pembukuan</h3>
+        <p>Omzet dikurangi biaya operasional riil (sewa, staf, obat, alat, dll).</p>
+      </div>
+    </label>
+    <div class="sumber-toggle-body">
+      <label for="pb-omzet">Omzet bruto praktik setahun</label>
+      <div class="rp-wrap"><input type="text" id="pb-omzet" data-rupiah inputmode="numeric" placeholder="0"></div>
+
+      <h2 style="margin-top:18px; font-size:14px;">Biaya operasional setahun</h2>
+
+      <label for="pb-sewa">Sewa & operasional klinik</label>
+      <div class="rp-wrap"><input type="text" id="pb-sewa" data-rupiah inputmode="numeric" placeholder="0"></div>
+
+      <label for="pb-staf">Gaji / honor staf & asisten</label>
+      <div class="rp-wrap"><input type="text" id="pb-staf" data-rupiah inputmode="numeric" placeholder="0"></div>
+
+      <label for="pb-obat">Obat & bahan medis habis pakai</label>
+      <div class="rp-wrap"><input type="text" id="pb-obat" data-rupiah inputmode="numeric" placeholder="0"></div>
+
+      <label for="pb-penyusutan">Penyusutan alat medis</label>
+      <div class="rp-wrap"><input type="text" id="pb-penyusutan" data-rupiah inputmode="numeric" placeholder="0"></div>
+
+      <label for="pb-lainnya">Biaya operasional lain-lain</label>
+      <div class="rp-wrap"><input type="text" id="pb-lainnya" data-rupiah inputmode="numeric" placeholder="0"></div>
+
+      <div class="hasil-mini" id="hasilmini-pembukuan"></div>
+    </div>
+  </div>
+
+  <p class="pesan-peringatan" id="pesanPeringatan">Centang minimal satu sumber penghasilan dulu, ya.</p>
+
+  <button class="primary" id="btnLanjut">Lanjut ke Ringkasan Tahunan →</button>
+
+  <div class="catatan peringatan" style="margin-top:24px;">
+    Ini alat bantu estimasi, bukan nasihat pajak resmi. Aturan yang dipakai: UU HPP 2021 (tarif Pasal 17), PMK 168/2023 (PPh 21 bukan pegawai), dan norma penghitungan penghasilan neto untuk profesi dokter (KEP-536/PJ/2000). Untuk kepastian hukum, konsultasikan dengan konsultan pajak atau kantor pajak terdaftar.
+  </div>
+</main>
+
+<footer>Kalkulator pajak dokter — alat bantu estimasi, dibuat untuk kebutuhan pribadi.</footer>
+
+<script src="js/tax-core.js"></script>
+<script src="js/wizard.js"></script>
+</body>
+</html>
