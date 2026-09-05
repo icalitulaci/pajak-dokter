@@ -1,0 +1,6 @@
+.git
+.github
+.impeccable
+Dockerfile
+docker-compose.yml
+.dockerignore
